@@ -1,6 +1,40 @@
-mushanghai-bot/
-├── .gitignore          ← Plain text, no extension
-├── worker.js           ← Plain text JavaScript
-├── wrangler.toml       ← Plain text config
-├── package.json        ← Plain text JSON
-└── README.md           ← Plain text Markdown
+# Dependencies
+node_modules/
+
+# Environment variables and secrets
+.env
+.env.local
+.env.production
+
+# Cloudflare local files
+.wrangler/
+.dev.vars
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Don't commit your bot token accidentally
+# (Keep it as a secret in Cloudflare)
