@@ -1,0 +1,11 @@
+{
+  "name": "mushanghai-telegram-bot",
+  "version": "1.0.0",
+  "description": "Telegram verification bot for muShanghai event attendees",
+  "main": "worker.js",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "author": "muShanghai Team",
+  "license": "MIT"
+}

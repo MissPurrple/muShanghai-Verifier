@@ -1,0 +1,81 @@
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    
+    // Handle the /init endpoint (for setup)
+    if (url.pathname === "/init") {
+      const webhookUrl = `https://${request.headers.get("host")}/webhook`;
+      const setWebhook = await fetch(
+        `https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/setWebhook?url=${webhookUrl}`
+      );
+      const result = await setWebhook.json();
+      return new Response(JSON.stringify(result), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    
+    // Handle incoming Telegram messages
+    if (url.pathname === "/webhook" && request.method === "POST") {
+      const update = await request.json();
+      
+      // Check if this is a message from a user
+      if (update.message && update.message.text) {
+        const chatId = update.message.chat.id;
+        const text = update.message.text;
+        
+        // Handle /start command with welcome message
+        if (text === "/start") {
+          const welcomeMessage = 
+"🇨🇳 中文:\n" +
+"我是一个用于验证您是否有效入选 muShanghai 的机器人，验证通过后，会为您授予 Telegram 群组的访问权限。验证成功后，您将收到一个一次性的 Telegram 链接。该链接一旦使用，就会立即失效。请使用您当初申请 muShanghai 时填写的邮箱地址。\n\n" +
+"要开始验证，请使用以下命令：/verify 您填写的邮箱地址\n\n" +
+"——————————————————\n\n" +
+"🇬🇧 English:\n" +
+"I am a bot created for the purposes of verifying your valid acceptance into muShanghai, to then give you access to the Telegram group. Once verified, you will be given a one-time use link to Telegram. Once used, it becomes invalid. Please use the email you used when applying for muShanghai.\n\n" +
+"To verify, please use the following command: /verify youremailhere";
+          
+          await sendMessage(env.TELEGRAM_TOKEN, chatId, welcomeMessage);
+        }
+        // Handle /verify command
+        else if (text.startsWith("/verify")) {
+          const email = text.replace("/verify", "").trim();
+          
+          if (!email) {
+            await sendMessage(env.TELEGRAM_TOKEN, chatId, "Please provide an email: /verify your@email.com\n\n请提供邮箱地址：/verify 您的邮箱@example.com");
+            return new Response("OK");
+          }
+          
+          // Simple email check (you'll upgrade this to use your whitelist later)
+          if (email.includes("@") && email.includes(".")) {
+            const inviteLink = "YOUR_PRIVATE_GROUP_INVITE_LINK_HERE";
+            await sendMessage(env.TELEGRAM_TOKEN, chatId, 
+              `✅ Email ${email} verified!\n\nJoin the MuShanghai group here:\n${inviteLink}\n\n(This link is only for approved participants)\n\n————\n\n✅ 邮箱 ${email} 已验证！\n\n加入 muShanghai 群组：\n${inviteLink}\n\n（此链接仅限获批参与者使用）`
+            );
+          } else {
+            await sendMessage(env.TELEGRAM_TOKEN, chatId, "❌ Invalid email format. Please use a valid email address.\n\n❌ 邮箱格式无效。请使用有效的邮箱地址。");
+          }
+        } else if (text === "/help") {
+          await sendMessage(env.TELEGRAM_TOKEN, chatId, "Commands / 命令:\n/start - Welcome message / 欢迎信息\n/verify email@address.com - Verify your registration / 验证您的注册\n/help - Show this / 显示帮助");
+        }
+      }
+      
+      return new Response("OK");
+    }
+    
+    // Default response for any other requests
+    return new Response("MuShanghai Verification Bot is running!");
+  }
+};
+
+// Helper function to send Telegram messages
+async function sendMessage(token, chatId, text) {
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: text
+    })
+  });
+}
