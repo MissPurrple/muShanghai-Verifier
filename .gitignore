@@ -1,0 +1,6 @@
+mushanghai-bot/
+├── .gitignore          ← Plain text, no extension
+├── worker.js           ← Plain text JavaScript
+├── wrangler.toml       ← Plain text config
+├── package.json        ← Plain text JSON
+└── README.md           ← Plain text Markdown
